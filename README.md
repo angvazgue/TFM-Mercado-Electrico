@@ -1,4 +1,4 @@
-# TFM-Mercado-El-ctrico
+# TFM-Mercado-Electrico
 
 Autor/a: Ángela Vázquez Guerra
 
