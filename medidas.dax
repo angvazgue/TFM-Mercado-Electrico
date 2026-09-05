@@ -1,0 +1,90 @@
+% Renovable = DIVIDE([Prod Renovable (MWh)], [Prod Total (MWh)], 0)
+  
+Demanda Total (MW) = SUM(FactDemanda[Valor])
+
+Demanda_Media_Diaria = 
+AVERAGEX(
+    VALUES(DimCalendario[Fecha]),
+    CALCULATE(SUM(FactDemanda[Valor]))
+)
+
+Demanda_Minima = MIN(FactDemanda[Valor])
+
+Demanda_Total = SUM(FactDemanda[Valor])
+
+Filas_Demanda = COUNTROWS(FactDemanda)
+
+Maximo_Demanda = MAX(FactDemanda[Valor])
+
+Mes Mas Barato = 
+VAR TablaMesesYPrecios = 
+    SUMMARIZE(
+        DimCalendario, 
+        DimCalendario[NombreMes], 
+        "PrecioMensual", AVERAGE(FactPrecio[Valor])
+    )
+VAR MinimoPrecio = MINX(TablaMesesYPrecios, [PrecioMensual])
+VAR MesFiltrado = FILTER(TablaMesesYPrecios, [PrecioMensual] = MinimoPrecio)
+RETURN
+    MAXX(MesFiltrado, DimCalendario[NombreMes])
+
+Mes Mas Caro = 
+VAR TablaMesesYPrecios = 
+    SUMMARIZE(
+        DimCalendario, 
+        DimCalendario[NombreMes], 
+        "PrecioMensual", AVERAGE(FactPrecio[Valor])
+    )
+VAR MaximoPrecio = MAXX(TablaMesesYPrecios, [PrecioMensual])
+VAR MesFiltrado = FILTER(TablaMesesYPrecios, [PrecioMensual] = MaximoPrecio)
+RETURN
+    MAXX(MesFiltrado, DimCalendario[NombreMes])
+
+Precio % vs Media Anual = 
+VAR MediaAnual = CALCULATE(AVERAGE(FactPrecio[Valor]), ALL(DimCalendario))
+VAR PrecioActual = [Precio Diario Base]
+RETURN
+    DIVIDE(PrecioActual - MediaAnual, MediaAnual, 0)
+
+Precio Desviacion Estandar = STDEV.S(FactPrecio[Valor])
+
+Precio Diario Base = AVERAGE(FactPrecio[Valor])
+
+Precio Media Movil 30d = 
+CALCULATE(
+    AVERAGE(FactPrecio[Valor]),
+    DATESINPERIOD(DimCalendario[Fecha], LASTDATE(DimCalendario[Fecha]), -30, DAY)
+)
+
+Precio_Maximo_Real = CALCULATE(MAX(FactPrecio[Valor]))
+
+Precio_Medio_Sincronizado = 
+AVERAGEX(
+    VALUES(DimCalendario[Fecha]),
+    CALCULATE(AVERAGE(FactPrecio[Valor]))
+)
+
+Precio_Minimo_Real = CALCULATE(MIN(FactPrecio[Valor]))
+
+Prod No Renovable (MWh) = 
+CALCULATE(
+    SUM(FactGeneracion[Valor]),
+    FactGeneracion[Indicador] IN {"Ciclo Combinado", "Nuclear"}
+)
+
+Prod Renovable (MWh) = 
+CALCULATE(
+    SUM(FactGeneracion[Valor]),
+    FactGeneracion[Indicador] IN {"Eólica", "Solar", "Hidráulica", "Biomasa"}
+)
+
+Prod Total (MWh) = SUM(FactGeneracion[Valor])
+
+Produccion_Biomasa_Total = CALCULATE(SUM(FactGeneracion[Valor]), FactGeneracion[Indicador] = "Biomasa")
+
+Produccion_Eolica_Total = CALCULATE(SUM(FactGeneracion[Valor]), FactGeneracion[Indicador] = "Eólica")
+
+Produccion_Hidraulica_Total = CALCULATE(SUM(FactGeneracion[Valor]), FactGeneracion[Indicador] = "Hidráulica")
+
+Produccion_Solar_Total = CALCULATE(SUM(FactGeneracion[Valor]), FactGeneracion[Indicador] = "Solar")
+
